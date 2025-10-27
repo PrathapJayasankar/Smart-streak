@@ -12,8 +12,7 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        const success = await login(email, password);
-        if (success) {
+        if (await login(email, password)) {
             navigate('/dashboard');
         } else {
             setError('Invalid credentials. Please try again.');
@@ -25,25 +24,11 @@ const Login = () => {
             <h2>Login</h2>
             {error && <div className="alert">{error}</div>}
             <form onSubmit={handleSubmit}>
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                />
+                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                 <button type="submit">Login</button>
             </form>
-            <p className="link-text">
-                Don't have an account? <Link to="/register">Register</Link>
-            </p>
+            <p className="link-text">Don't have an account? <Link to="/register">Register</Link></p>
         </div>
     );
 };
