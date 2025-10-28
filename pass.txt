@@ -1,0 +1,27 @@
+mongodb+srv://habitstreakuser:Leftwing@habit-app.fkddras.mongodb.net/?retryWrites=true&w=majority&appName=Habit-App
+environmental variables:
+MONGO_URI
+mongodb+srv://habitstreakuser:Leftwing37@habit-app.fkddras.mongodb.net/?appName=Habit-App
+
+JWT_SECRET
+thisisadeployedsecretkeyforhabitstreakapp54321
+
+public url:
+https://habit-streak-api-37.onrender.com
+
+vercel team
+Prathap J's projects
+
+project Name
+habit-streak-app
+
+Project Name: habit-streak-app
+Framework Preset: Create React App
+Root Directory: frontend
+Environment Variables: 1 configured (REACT_APP_API_URL)
+
+deployment
+smart-streak-h81ymh5yo-prathap-js-projects.vercel.app
+
+domain
+smart-streak-flame.vercel.app

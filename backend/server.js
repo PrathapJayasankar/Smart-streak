@@ -1,5 +1,5 @@
 const express = require('express');
-const cors = require('cors'); // Make sure cors is imported
+const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
 require('dotenv').config();
@@ -11,36 +11,56 @@ const groupRoutes = require('./routes/groupRoutes');
 const Message = require('./models/Message');
 
 const app = express();
-
-// --- START: CORRECT CORS CONFIGURATION ---
-// This section MUST be before the routes are defined.
-const corsOptions = {
-  origin: 'http://localhost:3000', // Allow only your React app to make requests
-  optionsSuccessStatus: 200 
-};
-app.use(cors(corsOptions));
-// --- END: CORRECT CORS CONFIGURATION ---
-
 const server = http.createServer(app);
 
-const io = new Server(server, {
-    cors: {
-        origin: "http://localhost:3000", // CORS for Socket.IO
-        methods: ["GET", "POST"]
+// --- START: UNIFIED CORS CONFIGURATION ---
+
+// 1. Define the list of all websites you want to allow.
+const allowedOrigins = [
+    'http://localhost:3000', // For your local development
+    'https://habit-streak-app.vercel.app' // <<-- IMPORTANT: REPLACE WITH YOUR REAL VERCEL URL
+];
+
+// 2. CORS Options for Express API
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
     }
-});
+  },
+  optionsSuccessStatus: 200
+};
+
+// 3. CORS Configuration for Socket.IO Server
+const socketCorsOptions = {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"]
+};
+
+// Initialize Socket.IO server with its CORS options
+const io = new Server(server, { cors: socketCorsOptions });
+
+// --- END: UNIFIED CORS CONFIGURATION ---
+
 
 // Connect to database
 connectDB();
 
-// Middleware
-// We moved cors() up, but express.json() can stay here.
+
+// --- Apply Middleware ---
+app.use(cors(corsOptions)); // Apply the Express CORS options
 app.use(express.json());
 
-// Routes
+
+// --- Define Routes ---
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/groups', groupRoutes);
+
+
+// ... (The rest of your server.js file remains exactly the same) ...
 
 // Simple root route
 app.get('/', (req, res) => {
@@ -49,32 +69,7 @@ app.get('/', (req, res) => {
 
 // Socket.IO connection handler
 io.on('connection', (socket) => {
-    console.log('A user connected with socket id:', socket.id);
-
-    socket.on('joinGroup', (groupId) => {
-        socket.join(groupId);
-        console.log(`User ${socket.id} joined group ${groupId}`);
-        socket.emit('chatMessage', { username: 'System', text: `Welcome to the group chat!` });
-    });
-
-    socket.on('leaveGroup', (groupId) => {
-        socket.leave(groupId);
-        console.log(`User ${socket.id} left group ${groupId}`);
-    });
-
-    socket.on('sendChatMessage', async ({ groupId, userId, username, text }) => {
-        try {
-            const message = new Message({ group: groupId, user: userId, username: username, text: text });
-            await message.save();
-            io.to(groupId).emit('chatMessage', { user: userId, username: username, text: text, createdAt: message.createdAt });
-        } catch (err) {
-            console.error('Error saving or broadcasting message:', err);
-        }
-    });
-
-    socket.on('disconnect', () => {
-        console.log('User disconnected:', socket.id);
-    });
+    // ... all your socket.on events ...
 });
 
 // Start server
