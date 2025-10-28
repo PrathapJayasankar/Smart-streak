@@ -5,41 +5,44 @@ const { Server } = require('socket.io');
 require('dotenv').config();
 
 const connectDB = require('./config/db');
-const apiRoutes = require('./routes'); // <-- Import the new central router
+const authRoutes = require('./routes/authRoutes');
+const taskRoutes = require('./routes/taskRoutes');
+const groupRoutes = require('./routes/groupRoutes');
 const Message = require('./models/Message');
 
 const app = express();
 const server = http.createServer(app);
 
-// --- Unified CORS Configuration ---
+// --- START: SIMPLIFIED CORS CONFIGURATION ---
+
+// 1. Define the list of allowed websites.
 const allowedOrigins = [
     'http://localhost:3000',
     'https://smart-streak-9mvqvqscf-prathap-js-projects.vercel.app' // Your Vercel URL
 ];
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+
+// 2. Use a simpler CORS setup for both Express and Socket.IO
+app.use(cors({ origin: allowedOrigins }));
+const io = new Server(server, {
+    cors: {
+        origin: allowedOrigins,
+        methods: ["GET", "POST"]
     }
-  },
-  optionsSuccessStatus: 200
-};
-const socketCorsOptions = {
-    origin: allowedOrigins,
-    methods: ["GET", "POST"]
-};
-const io = new Server(server, { cors: socketCorsOptions });
+});
+
+// --- END: SIMPLIFIED CORS CONFIGURATION ---
+
 
 // --- Connect to DB & Apply Middleware ---
 connectDB();
-app.use(cors(corsOptions));
 app.use(express.json());
 
-// --- API Routes ---
-// All API routes will be prefixed with /api
-app.use('/api', apiRoutes); // <-- Use the central router here
+
+// --- Define API Routes Explicitly ---
+app.use('/api/auth', authRoutes);
+app.use('/api/tasks', taskRoutes);
+app.use('/api/groups', groupRoutes);
+
 
 // Simple root route for testing
 app.get('/', (req, res) => {
@@ -48,18 +51,28 @@ app.get('/', (req, res) => {
 
 // Socket.IO connection handler
 io.on('connection', (socket) => {
-    // ... all your socket.on events ... (this part doesn't change)
     console.log('A user connected with socket id:', socket.id);
-    socket.on('joinGroup', (groupId) => { socket.join(groupId); console.log(`User ${socket.id} joined group ${groupId}`); });
-    socket.on('leaveGroup', (groupId) => { socket.leave(groupId); console.log(`User ${socket.id} left group ${groupId}`); });
+
+    socket.on('joinGroup', (groupId) => {
+        socket.join(groupId);
+        console.log(`User ${socket.id} joined group ${groupId}`);
+    });
+    socket.on('leaveGroup', (groupId) => {
+        socket.leave(groupId);
+        console.log(`User ${socket.id} left group ${groupId}`);
+    });
     socket.on('sendChatMessage', async ({ groupId, userId, username, text }) => {
         try {
             const message = new Message({ group: groupId, user: userId, username, text });
             await message.save();
             io.to(groupId).emit('chatMessage', { user: userId, username, text, createdAt: message.createdAt });
-        } catch (err) { console.error('Error handling chat message:', err); }
+        } catch (err) {
+            console.error('Error handling chat message:', err);
+        }
     });
-    socket.on('disconnect', () => { console.log('User disconnected:', socket.id); });
+    socket.on('disconnect', () => {
+        console.log('User disconnected:', socket.id);
+    });
 });
 
 // Start server
