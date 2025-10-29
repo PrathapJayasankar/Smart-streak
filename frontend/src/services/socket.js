@@ -1,7 +1,7 @@
 import { io } from 'socket.io-client';
 
 // The URL of our backend server
-const SOCKET_URL = 'http://localhost:5000';
+const SOCKET_URL = 'https://habit-streak-api-v2.onrender.com';
 
 const socket = io(SOCKET_URL, {
     autoConnect: false, // We will manually connect later

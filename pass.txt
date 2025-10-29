@@ -4,7 +4,7 @@ MONGO_URI
 mongodb+srv://habitstreakuser:Leftwing37@habit-app.fkddras.mongodb.net/?appName=Habit-App
 
 JWT_SECRET
-thisisadeployedsecretkeyforhabitstreakapp54321
+a_very_secure_and_random_jwt_secret_for_v2
 
 public url:
 https://habit-streak-api-37.onrender.com
@@ -25,3 +25,11 @@ smart-streak-h81ymh5yo-prathap-js-projects.vercel.app
 
 domain
 smart-streak-flame.vercel.app
+
+
+mongodb+srv://habitstreakuser:Leftwing@habit-app.fkddras.mongodb.net/?appName=Habit-App
+
+
+DemWZZF01vN7Vw76
+
+mongodb+srv://habitstreakuser:DemWZZF01vN7Vw76@habit-app.fkddras.mongodb.net/?appName=Habit-App
